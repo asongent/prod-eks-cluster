@@ -1,0 +1,26 @@
+# Local .terraform directories and files
+**/.terraform/*
+*.terraform*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars file generated automatically for each terraform run
+# managed .tfvars files should be included in version control
+terraform.tfvars
+
+# override files
+
+*_override.tf
+*_override.tf.json
+override.tf
+override.tf.json
+#include additional overrid files 
+
+
+# ignore plan output files eg: terraform plan -out=plan.out
+
+plan.out
+
+
