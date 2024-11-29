@@ -8,7 +8,7 @@
 
 # .tfvars file generated automatically for each terraform run
 # managed .tfvars files should be included in version control
-terraform.tfvars
+# terraform.tfvars
 
 # override files
 
