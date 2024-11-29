@@ -28,6 +28,5 @@ bastion-host_name = "jum-box"
 key_name          = "bastion_key"
 account_id        = "843825445314"
 
-#Bastion host details theskg
 #bastion_host_sg  = "bastion_host_sg"
 ami_id            = "ami-0ea3c35c5c3284d82"
