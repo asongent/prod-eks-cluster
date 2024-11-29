@@ -96,7 +96,7 @@ resource "aws_eks_node_group" "gpu-worker-nodes" {
   ami_type        = var.ami_type 
   capacity_type   = var.capacity_type #Valid Values [ON_DEMAND, SPOT]
   instance_types  = var.instance_types
-  disk_size       = 50
+  disk_size       = 200
   labels          = var.labels 
   taint {
     key = "soc-instance"

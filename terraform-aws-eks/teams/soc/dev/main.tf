@@ -59,22 +59,22 @@ module "eks_node_group" {
 
 
 
-module "gpu_node_group" {
-  source              = "../../../modules/gpu_node_group"
-  vpc_id              = module.vpc.vpc_id
-  cluster_sg          = module.eks_cluster.cluster_sg_id
-  cluster_name        = var.cluster_name
-  gpu_group_name      = var.gpu_group_name
-  labels              = { node = "gpu", type = "spot" }
-  ami_type            = "AL2_x86_64_GPU"
-  capacity_type       = "ON_DEMAND"
-  instance_types      = ["g5.16xlarge, g5.2xlarge, g5.24xlarge, g3.8xlarge, g3.4xlarge"]
-  gpu_desired_size    = var.gpu_desired_size
-  gpu_min_size        = var.gpu_min_size
-  gpu_max_size        = var.gpu_max_size
-  private_subnet_id   = module.subnet[*].private_subnet
-  cluster_create_wait = module.eks_cluster.endpoint
-}
+# module "gpu_node_group" {
+#   source              = "../../../modules/gpu_node_group"
+#   vpc_id              = module.vpc.vpc_id
+#   cluster_sg          = module.eks_cluster.cluster_sg_id
+#   cluster_name        = var.cluster_name
+#   gpu_group_name      = var.gpu_group_name
+#   labels              = { node = "gpu", type = "spot" }
+#   ami_type            = "AL2_x86_64_GPU"
+#   capacity_type       = "ON_DEMAND"
+#   instance_types      = ["g5.16xlarge, g5.2xlarge, g5.24xlarge, g3.8xlarge, g3.4xlarge"]
+#   gpu_desired_size    = var.gpu_desired_size
+#   gpu_min_size        = var.gpu_min_size
+#   gpu_max_size        = var.gpu_max_size
+#   private_subnet_id   = module.subnet[*].private_subnet
+#   cluster_create_wait = module.eks_cluster.endpoint
+# }
 module "addons" {
   source       = "../../../modules/eks-addons"
   cluster_name = var.cluster_name
