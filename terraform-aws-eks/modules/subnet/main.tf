@@ -6,8 +6,9 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name                                        = "${var.vpc_name}-${var.availability_zone}-public-subnet"
-    "kubernetes.io/cluster/eks"                 = "shared"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    # "kubernetes.io/cluster/eks"                 = "shared"
+    # "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    # "karpenter.sh/discovery"                    = var.cluster_name
     "kubernetes.io/role/elb"                    = 1
   }
 }
@@ -20,9 +21,10 @@ resource "aws_subnet" "private" {
 
   tags = {
     Name                                        = "${var.vpc_name}-${var.availability_zone}-private-subnet"
-    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
-    "kubernetes.io/cluster/eks"                 = "shared"
+    # "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    # "kubernetes.io/cluster/eks"                 = "shared"
     "kubernetes.io/role/internal-elb"           = 1
+    "karpenter.sh/discovery"                    = var.cluster_name
   }
 }
 

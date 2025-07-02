@@ -22,14 +22,14 @@ output "cluster_iam_role_name" {
   value = aws_iam_role.cluster_role.name
 }
 
-output "cluster_sg_id" {
-  value = aws_security_group.cluster_sg.id
-}
+# output "cluster_sg_id" {
+#   value = aws_security_group.cluster_sg.id
+# }
 
-output "cluster_sg_name" {
-  value = aws_security_group.cluster_sg.name
-}
+# output "cluster_sg_name" {
+#   value = aws_security_group.cluster_sg.name
+# }
 
-output "bastion_host_security_group_id" {
-  value = aws_security_group.bastion_host_sg.id
-}
+# output "bastion_host_security_group_id" {
+#   value = aws_security_group.bastion_host_sg.id
+# }

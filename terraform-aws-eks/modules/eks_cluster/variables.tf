@@ -32,3 +32,8 @@ variable "csi-role-name" {
 # variable "bastion_host_sg" {
 # default = "" 
 # }
+
+
+variable "private_access" {}
+
+variable "public_access" {}

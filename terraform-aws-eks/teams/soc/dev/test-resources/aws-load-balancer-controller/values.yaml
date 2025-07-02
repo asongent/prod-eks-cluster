@@ -159,7 +159,7 @@ createIngressClassResource: true
 region: us-east-2
 
 # The VPC ID for the Kubernetes cluster. Set this manually when your pods are unable to use the metadata service to determine this automatically
-vpcId: vpc-09795dad903147d25
+vpcId: vpc-07551256e8d60d741
 
 # Custom AWS API Endpoints (serviceID1=URL1,serviceID2=URL2)
 awsApiEndpoints:

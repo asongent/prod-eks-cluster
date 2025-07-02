@@ -1,5 +1,5 @@
 resource "aws_iam_role" "worker_node_role" {
-  name = "${var.cluster_name}-node-role"
+  name = "${var.cluster_name}-cpu-node-role"
 
   assume_role_policy = jsonencode({
     Statement = [{
@@ -43,52 +43,6 @@ resource "aws_iam_instance_profile" "worker_node_instance_profile" {
   role = aws_iam_role.worker_node_role.name
 }
 
-resource "aws_security_group" "worker_node_sg" {
-  name        = "${var.cluster_name}-node-sg"
-  description = "Security group for EKS worker nodes also grants ssh access"
-  vpc_id      = var.vpc_id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.cluster_name}-node-sg"
-  }
-}
-
-resource "aws_security_group_rule" "self" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  self              = true
-  security_group_id = aws_security_group.worker_node_sg.id
-}
-
-resource "aws_security_group_rule" "cluster" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = var.cluster_sg
-  security_group_id = aws_security_group.worker_node_sg.id
-}
-
-
-resource "aws_security_group_rule" "ssh_access" {
-  cidr_blocks       = [local.workstation-external-cidr]
-  description       = "Allow ssh access from local computer"
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.worker_node_sg.id
-  to_port           = 22
-  type              = "ingress"
-}
-
 resource "aws_eks_node_group" "cpu-worker-nodes" {
   cluster_name    = var.cluster_name
   node_group_name = var.node_group_name
@@ -97,7 +51,7 @@ resource "aws_eks_node_group" "cpu-worker-nodes" {
   ami_type        = var.ami_type # possible values [AL2_x86_64, AL2_x86_64_GPU, AL2_ARM_64]
   capacity_type   = var.capacity_type #Valid Values [ON_DEMAND, SPOT]
   instance_types  = var.instance_types
-  disk_size       = "200"
+  disk_size       = "300"
   labels          = var.labels #key-value map
   # tags            = var.tags #key-value map
 
@@ -106,7 +60,9 @@ resource "aws_eks_node_group" "cpu-worker-nodes" {
     max_size     = var.max_size
     min_size     = var.min_size
   }
-
+  update_config {
+      max_unavailable = 1
+    }
   # Optional: Allow external changes without Terraform plan difference
   lifecycle {
     ignore_changes = [scaling_config[0].desired_size]

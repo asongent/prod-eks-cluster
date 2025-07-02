@@ -112,3 +112,52 @@ variable "ami_id" {
   description = "chose instance type base on you preference"
   default     = ""
 }
+
+
+variable "private_access" {}
+variable "public_access" {}
+
+##RDS Details
+variable "identifier" {}
+variable "rds-sg-name" {}
+variable "engine_type" {}
+variable "rds_instance_class" {}
+variable "user_name" {
+  default = ""
+}
+variable "db_password" {
+  default = ""
+}
+variable "storage" {
+  default = ""
+}
+variable "engine_version" {
+  default = ""
+}
+variable "publicly_accessible" {}
+variable "snapshot" {}
+
+variable "bastion_sg_name" {}
+
+# variable "private_subnet_id" {}
+# variable "vpc_id" {}
+# variable "vpc_security_group_ids" {}
+
+
+### Karpenter
+variable "Karp_ng_name" {
+  description = "Name of EKS node to hold karpenter"
+}
+
+variable "desired" {
+  type        = number
+  description = "desired node count for cluster node group"
+}
+variable "max" {
+  type        = number
+  description = "Max size for nodes in the node group"
+}
+variable "min" {
+  type        = number
+  description = "Min size for nodes in the node group"
+}

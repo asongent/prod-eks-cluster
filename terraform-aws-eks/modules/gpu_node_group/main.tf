@@ -43,50 +43,50 @@ resource "aws_iam_instance_profile" "gpu_node_instance_profile" {
   role = aws_iam_role.gpu_node_role.name
 }
 
-resource "aws_security_group" "gpu_node_sg" {
-  name        = "${var.gpu_group_name}-sg"
-  description = "Security group for EKS gpu nodes also grants ssh access"
-  vpc_id      = var.vpc_id
+# resource "aws_security_group" "gpu_node_sg" {
+#   name        = "${var.gpu_group_name}-sg"
+#   description = "Security group for EKS gpu nodes also grants ssh access"
+#   vpc_id      = var.vpc_id
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
 
-  tags = {
-    Name = "${var.cluster_name}-gpu-node-sg"
-  }
-}
+#   tags = {
+#     Name = "${var.cluster_name}-gpu-node-sg"
+#   }
+# }
 
-resource "aws_security_group_rule" "self" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  self              = true
-  security_group_id = aws_security_group.gpu_node_sg.id
-}
+# resource "aws_security_group_rule" "self" {
+#   type              = "ingress"
+#   from_port         = 0
+#   to_port           = 0
+#   protocol          = "-1"
+#   self              = true
+#   security_group_id = aws_security_group.gpu_node_sg.id
+# }
 
-resource "aws_security_group_rule" "cluster" {
-  type                     = "ingress"
-  from_port                = 0
-  to_port                  = 0
-  protocol                 = "-1"
-  source_security_group_id = var.cluster_sg
-  security_group_id = aws_security_group.gpu_node_sg.id
-}
+# resource "aws_security_group_rule" "cluster" {
+#   type                     = "ingress"
+#   from_port                = 0
+#   to_port                  = 0
+#   protocol                 = "-1"
+#   source_security_group_id = var.cluster_sg
+#   security_group_id = aws_security_group.gpu_node_sg.id
+# }
 
-resource "aws_security_group_rule" "ssh_access" {
-  cidr_blocks       = [local.workstation-external-cidr]
-  description       = "Allow ssh access from local computer"
-  from_port         = 22
-  protocol          = "tcp"
-  security_group_id = aws_security_group.gpu_node_sg.id
-  to_port           = 22
-  type              = "ingress"
-}
+# resource "aws_security_group_rule" "ssh_access" {
+#   cidr_blocks       = [local.workstation-external-cidr]
+#   description       = "Allow ssh access from local computer"
+#   from_port         = 22
+#   protocol          = "tcp"
+#   security_group_id = aws_security_group.gpu_node_sg.id
+#   to_port           = 22
+#   type              = "ingress"
+# }
 
 resource "aws_eks_node_group" "gpu-worker-nodes" {
   cluster_name    = var.cluster_name

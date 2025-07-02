@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 ### EBS CSI config
 resource "aws_iam_role" "ebs-csi-driver" {
-  name               =  "ebs-csi-driver-role" 
+  name               =  "${var.cluster_name}-ebs-csi-driver-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 resource "aws_iam_role_policy_attachment" "ebs-csi-driver" {
@@ -34,7 +34,7 @@ resource "aws_eks_pod_identity_association" "ebs-csi-driver" {
 
 ### S3 ReadOnly Access
 resource "aws_iam_role" "s3-readonly-access" {
-  name               =  "s3-readonly-access-role" 
+  name               =  "${var.cluster_name}-s3-readonly-access-role" 
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
@@ -50,8 +50,7 @@ resource "aws_eks_pod_identity_association" "s3-readonly-access" {
   role_arn        = aws_iam_role.s3-readonly-access.arn
 }
 
-### KMS key for ArgoCD
-## KMS key POLICY
+### CREATE KMS key for Secret encryption
 
 #  resource "aws_kms_key" "argocd-kms-key" {
 #   description             = "KMS key for encrypting and decryption of secrets with argocd"
@@ -59,15 +58,15 @@ resource "aws_eks_pod_identity_association" "s3-readonly-access" {
 #   is_enabled              = true
 #  }
 
-## Argo po identity config with kms
+## ArgoCD po identity config with kms
 resource "aws_iam_role" "argocd-enc-depc-key" {
-  name               =  "argocd-enc-depc-key" 
+  name               =  "${var.cluster_name}-argocd-enc-key-role" 
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 ## CUSTOM IAM POLICY
 resource "aws_iam_policy" "kms-key-policy" {
-  name        = "kms-key-policy"
+  name        = "${var.cluster_name}-kms-key-policy"
   description = "This policy inherits permissions to allow argocd encrypt and decrypt secrets"
   # policy      = data.aws_iam_policy_document.assume_role.json
   policy      = <<EOT
@@ -97,7 +96,7 @@ resource "aws_iam_role_policy_attachment" "argocd-enc-depc-key" {
 resource "aws_eks_pod_identity_association" "kms-key" {
   cluster_name    = var.cluster_name
   namespace       = "argocd"
-  service_account = "argocd-server"
+  service_account = "argocd-repo-server"
   role_arn        = aws_iam_role.argocd-enc-depc-key.arn
 }
 
@@ -105,13 +104,13 @@ resource "aws_eks_pod_identity_association" "kms-key" {
 
 ###AWS ELB Controller
 resource "aws_iam_role" "aws-load-balancer-controller-role" {
-  name               =  "AmazonEKSLoadBalancerControllerRole" 
+  name               =  "${var.cluster_name}-eks-loadBalancerControllerRole" 
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
 
 resource "aws_iam_policy" "aws-load-balancer-controller-policy"  {
-    name        = "AWSLoadBalancerControllerIAMPolicy" 
+    name        = "${var.cluster_name}-loadBalancerControllerIAMPolicy" 
     description = "Enables the cluster to create custom LB"
     policy      = file("policies/load-balancer-controller-iam_policy.json")
  }
@@ -127,4 +126,74 @@ resource "aws_eks_pod_identity_association" "aws-load-balancer-controller" {
   namespace       = "kube-system"
   service_account = "aws-load-balancer-controller"
   role_arn        = aws_iam_role.aws-load-balancer-controller-role.arn
+}
+
+
+### External Secret Operator
+resource "aws_iam_role" "aws-role-for-eso" {
+  name               =  "aws-role-for-eso" 
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+resource "aws_iam_policy" "aws-role-for-eso-policy"  {
+    name        = "${var.cluster_name}-secretManagerIAMPolicy" 
+    description = "Enables sso to read from AWS secret manager"
+    policy      = file("policies/secret-manager-policy.json")
+ }
+
+resource "aws_eks_pod_identity_association" "aws-role-for-eso-asso" {
+  cluster_name    = var.cluster_name
+  namespace       = "eso-operator"
+  service_account = "external-secrets-cert-controller"
+  role_arn        = aws_iam_role.aws-role-for-eso.arn
+}
+
+### Karpenter role
+resource "aws_iam_role" "karpenter-role" {
+  name = "${var.cluster_name}-karpenter-role"
+  assume_role_policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": [
+          "ec2.amazonaws.com",
+          "pods.eks.amazonaws.com"
+        ]
+      },
+      "Action": [
+        "sts:AssumeRole",
+        "sts:TagSession"
+      ]
+    }
+  ]
+}
+POLICY
+}
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonEKSWorkerNodePolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+  role       = aws_iam_role.karpenter-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonEKS_CNI_Policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+  role       = aws_iam_role.karpenter-role.name
+}
+
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonEC2ContainerRegistryPullOnly"{
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
+  role       = aws_iam_role.karpenter-role.name
+}
+resource "aws_iam_role_policy_attachment" "karpenter_AmazonSSMManagedInstanceCore"{
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.karpenter-role.name
+}
+
+resource "aws_eks_pod_identity_association" "karpenter-role-pda" {
+  cluster_name    = var.cluster_name
+  namespace       = "kube-system"
+  service_account = "karpenter"
+  role_arn        = aws_iam_role.karpenter-role.arn
 }
